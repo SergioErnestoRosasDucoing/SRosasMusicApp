@@ -101,23 +101,26 @@ class   MainActivity : ComponentActivity() {
                             composable("home") {
                                 HomeScreen(
                                     onOpenDetail = { albumId ->
-                                        // Pasar Serializable según requisito
-                                        nav.currentBackStackEntry?.arguments
-                                            ?.putSerializable("albumId", AlbumId(albumId))
-                                        nav.navigate("detail")
+                                        if (albumId.isNotBlank()) {
+
+                                            nav.currentBackStackEntry?.savedStateHandle?.set("albumId", AlbumId(albumId))
+                                            nav.navigate("detail")
+                                        }
                                     },
                                     onPlay = { album -> nowPlaying = album }
                                 )
                             }
 
                             composable("detail") {
-                                // Recuperar el Serializable desde el back stack
+
                                 val arg = nav.previousBackStackEntry
-                                    ?.arguments
-                                    ?.getSerializable("albumId") as? AlbumId
+                                    ?.savedStateHandle
+                                    ?.get<AlbumId>("albumId")
+
+                                val id = arg?.id.orEmpty()
 
                                 DetailScreen(
-                                    albumId = arg?.id ?: "",
+                                    albumId = id,
                                     onBack = { nav.popBackStack() },
                                     onPlay = { album -> nowPlaying = album }
                                 )

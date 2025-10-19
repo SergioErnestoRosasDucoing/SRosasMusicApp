@@ -64,6 +64,10 @@ fun DetailScreen(
     var album by remember { mutableStateOf<Album?>(null) }
 
     LaunchedEffect(albumId) {
+        if (albumId.isBlank()) {
+            loading = false
+            return@LaunchedEffect
+        }
         try {
             loading = true; error = null
             album = withContext(Dispatchers.IO) { MusicApi.service.getAlbum(albumId) }
@@ -71,6 +75,7 @@ fun DetailScreen(
             error = e.message ?: "Error"
         } finally { loading = false }
     }
+
 
     if (loading) {
         Box(

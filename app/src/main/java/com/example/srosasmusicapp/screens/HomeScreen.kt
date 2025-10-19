@@ -62,11 +62,14 @@ fun HomeScreen(onOpenDetail: (String) -> Unit, onPlay: (Album) -> Unit) { // <- 
 
     LaunchedEffect(Unit) {
         try {
-            loading = true; error = null
+            loading = true
+            error = null
             albums = withContext(Dispatchers.IO) { MusicApi.service.getAlbums() }
         } catch (e: Exception) {
             error = e.message ?: "Error desconocido"
-        } finally { loading = false }
+        } finally {
+            loading = false
+        }
     }
 
 
