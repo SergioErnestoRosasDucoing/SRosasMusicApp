@@ -59,5 +59,158 @@ fun DetailScreen(
     onBack: () -> Unit,
     onPlay: (Album) -> Unit
 ) {
-    Text(text = "Hola desde detail sccreen")
+    var loading by remember { mutableStateOf(true) }
+    var error by remember { mutableStateOf<String?>(null) }
+    var album by remember { mutableStateOf<Album?>(null) }
+
+    LaunchedEffect(albumId) {
+        try {
+            loading = true; error = null
+            album = withContext(Dispatchers.IO) { MusicApi.service.getAlbum(albumId) }
+        } catch (e: Exception) {
+            error = e.message ?: "Error"
+        } finally { loading = false }
+    }
+
+    if (loading) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator(color = PurpleGradA)
+        }
+        return
+    }
+    error?.let {
+        Column(
+            Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = "Error: $it",
+                color = MaterialTheme.colorScheme.error
+            )
+            TextButton(onClick = onBack) { Text("Volver") }
+        }
+        return
+    }
+
+    val a = album ?: return
+
+    LazyColumn(
+        contentPadding = PaddingValues(bottom = 24.dp)
+    ) {
+
+
+        // Header con imagen grande + scrim morado y acciones
+        item {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(300.dp)
+            ) {
+                AsyncImage(
+                    model = a.image,
+                    contentDescription = null,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
+                // Scrim (degradado morado/oscuro)
+                Box(
+                    Modifier
+                        .fillMaxSize()
+                        .background(
+                            Brush.verticalGradient(
+                                listOf(Color(0x66000000), Color.Transparent, ScrimPurple)
+                            )
+                        )
+                )
+
+                Column(
+                    modifier = Modifier
+                        .align(Alignment.BottomStart)
+                        .padding(16.dp)
+                ) {
+                    Text(
+                        text = a.title,
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.Black,
+                        color = Color.White
+                    )
+                    Text(
+                        text= a.artist,
+                        color = Color.White
+                    )
+                    Spacer(
+                        Modifier.height(12.dp)
+                    )
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        FilledIconButton(onClick = { onPlay(a) }) {
+                            Icon(Icons.Default.PlayArrow, contentDescription = "Play")
+                        }
+                        OutlinedIconButton(onClick = { /* shuffle UI */ }) {
+                            Icon(Icons.Default.Shuffle, contentDescription = "Shuffle")
+                        }
+                    }
+                }
+            }
+        }
+
+        // About this album + Chip de artista
+        item {
+            Spacer(Modifier.height(12.dp))
+            Card(
+                modifier = Modifier.padding(horizontal = 16.dp),
+                shape = RoundedCornerShape(16.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            ) {
+                Column(Modifier.padding(16.dp)) {
+                    Text(
+                        text = "About this album",
+                        style = MaterialTheme.typography.titleMedium)
+                    Spacer(Modifier.height(8.dp))
+                    Text(text = a.description)
+                }
+            }
+            Spacer(Modifier.height(12.dp))
+            AssistChip(
+                onClick = { },
+                label = { Text("Artist: ${a.artist}") },
+                modifier = Modifier.padding(horizontal = 16.dp)
+            )
+            Spacer(Modifier.height(8.dp))
+            Text(
+                "Tracks",
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.padding(horizontal = 16.dp)
+            )
+            Spacer(Modifier.height(4.dp))
+        }
+
+        // 10 canciones ficticias
+        items((1..10).map { i -> "${a.title} • Track $i" }) { trackTitle ->
+            ListItem(
+                headlineContent = { Text(trackTitle) },
+                supportingContent = { Text(a.artist) },
+                leadingContent = {
+                    AsyncImage(
+                        model = a.image,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .padding(start = 16.dp)
+                            .size(44.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                    )
+                },
+                trailingContent = {
+                    Icon(Icons.Default.MoreVert, contentDescription = "More")
+                }
+            )
+            Divider()
+        }
+    }
 }
