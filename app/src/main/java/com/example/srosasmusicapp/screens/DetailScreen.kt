@@ -1,6 +1,7 @@
 package com.example.srosasmusicapp.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,13 +13,20 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Shuffle
+import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -26,9 +34,11 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedIconButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -105,117 +115,202 @@ fun DetailScreen(
     val a = album ?: return
 
     LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(PurpleGradA.copy(alpha = 0.06f)), // fondo lila claro
         contentPadding = PaddingValues(bottom = 24.dp)
     ) {
-
-
-        // Header con imagen grande + scrim morado y acciones
+        // HEADER card
         item {
-            Box(
+            Card(
                 modifier = Modifier
+                    .padding(16.dp)
                     .fillMaxWidth()
-                    .height(300.dp)
+                    .height(280.dp),
+                shape = RoundedCornerShape(28.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
             ) {
-                AsyncImage(
-                    model = a.image,
-                    contentDescription = null,
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop
-                )
-                // Scrim (degradado morado/oscuro)
-                Box(
-                    Modifier
-                        .fillMaxSize()
-                        .background(
-                            Brush.verticalGradient(
-                                listOf(Color(0x66000000), Color.Transparent, ScrimPurple)
+                Box(Modifier.fillMaxSize()) {
+                    AsyncImage(
+                        model = a.image,
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                    Box(
+                        Modifier
+                            .matchParentSize()
+                            .background(
+                                Brush.verticalGradient(
+                                    listOf(
+                                        Color(0x66000000),
+                                        Color.Transparent,
+                                        Color(0xAA7C4DFF)
+                                    )
+                                )
                             )
-                        )
-                )
-
-                Column(
-                    modifier = Modifier
-                        .align(Alignment.BottomStart)
-                        .padding(16.dp)
-                ) {
-                    Text(
-                        text = a.title,
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.Black,
-                        color = Color.White
-                    )
-                    Text(
-                        text= a.artist,
-                        color = Color.White
-                    )
-                    Spacer(
-                        Modifier.height(12.dp)
                     )
                     Row(
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp)
+                            .statusBarsPadding(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.Top
                     ) {
-                        FilledIconButton(onClick = { onPlay(a) }) {
-                            Icon(Icons.Default.PlayArrow, contentDescription = "Play")
+                        TranslucentCircleIcon(onClick = onBack) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "Back",
+                                tint = Color.White
+                            )
                         }
-                        OutlinedIconButton(onClick = { /* shuffle UI */ }) {
-                            Icon(Icons.Default.Shuffle, contentDescription = "Shuffle")
+                        TranslucentCircleIcon(onClick = {  }) {
+                            Icon(
+                                imageVector = Icons.Outlined.FavoriteBorder,
+                                contentDescription = "Favorite",
+                                tint = Color.White
+                            )
+                        }
+                    }
+                    Column(
+                        modifier = Modifier
+                            .align(Alignment.BottomStart)
+                            .padding(16.dp)
+                    ) {
+                        Text(
+                            text = a.title,
+                            style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.ExtraBold),
+                            color = Color.White
+                        )
+                        Text(text = a.artist, color = Color.White.copy(alpha = 0.9f))
+                        Spacer(Modifier.height(12.dp))
+                        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                            FilledIconButton(
+                                onClick = { onPlay(a) },
+                                colors = IconButtonDefaults.filledIconButtonColors(
+                                    containerColor = PurpleGradA,
+                                    contentColor = Color.White
+                                )
+                            ) { Icon(Icons.Default.PlayArrow, null) }
+
+                            FilledIconButton(
+                                onClick = {  },
+                                colors = IconButtonDefaults.filledIconButtonColors(
+                                    containerColor = Color.White,
+                                    contentColor = Color.Black
+                                )
+                            ) { Icon(Icons.Default.Shuffle, null) }
                         }
                     }
                 }
             }
         }
 
-        // About this album + Chip de artista
+        // ABOUT card + chip + título "Tracks"
         item {
-            Spacer(Modifier.height(12.dp))
             Card(
                 modifier = Modifier.padding(horizontal = 16.dp),
-                shape = RoundedCornerShape(16.dp),
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                shape = RoundedCornerShape(20.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White)
             ) {
                 Column(Modifier.padding(16.dp)) {
                     Text(
-                        text = "About this album",
-                        style = MaterialTheme.typography.titleMedium)
-                    Spacer(Modifier.height(8.dp))
-                    Text(text = a.description)
+                        "About this album",
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold)
+                    )
+                    Spacer(Modifier.height(6.dp))
+                    Text(a.description)
                 }
             }
             Spacer(Modifier.height(12.dp))
-            AssistChip(
-                onClick = { },
-                label = { Text("Artist: ${a.artist}") },
-                modifier = Modifier.padding(horizontal = 16.dp)
-            )
-            Spacer(Modifier.height(8.dp))
-            Text(
-                "Tracks",
-                style = MaterialTheme.typography.titleLarge,
-                modifier = Modifier.padding(horizontal = 16.dp)
-            )
-            Spacer(Modifier.height(4.dp))
+            PillChip(
+                text = "Artist: ${a.artist}",
+                modifier = Modifier.padding(horizontal = 16.dp))
+            Spacer(Modifier.height(12.dp))
+
         }
 
-        // 10 canciones ficticias
-        items((1..10).map { i -> "${a.title} • Track $i" }) { trackTitle ->
-            ListItem(
-                headlineContent = { Text(trackTitle) },
-                supportingContent = { Text(a.artist) },
-                leadingContent = {
-                    AsyncImage(
-                        model = a.image,
-                        contentDescription = null,
-                        modifier = Modifier
-                            .padding(start = 16.dp)
-                            .size(44.dp)
-                            .clip(RoundedCornerShape(8.dp))
-                    )
-                },
-                trailingContent = {
-                    Icon(Icons.Default.MoreVert, contentDescription = "More")
-                }
+        // TRACKS
+        items((1..10).toList()) { i ->
+            TrackCard(
+                cover = a.image,
+                title = "${a.title} • Track $i",
+                artist = a.artist
             )
-            Divider()
+            Spacer(Modifier.height(10.dp))
         }
+    }
+
+}
+
+@Composable
+private fun PillChip(text: String, modifier: Modifier = Modifier) {
+    Surface(
+        modifier = modifier,
+        shape = RoundedCornerShape(20.dp),
+        tonalElevation = 0.dp,
+        shadowElevation = 0.dp,
+        color = Color.White
+    ) {
+        Text(
+            text = text,
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+            style = MaterialTheme.typography.bodyMedium
+        )
+    }
+}
+
+@Composable
+private fun TrackCard(cover: String, title: String, artist: String) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
+        shape = RoundedCornerShape(16.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White)
+    ) {
+        Row(
+            modifier = Modifier.padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            AsyncImage(
+                model = cover,
+                contentDescription = null,
+                modifier = Modifier
+                    .size(44.dp)
+                    .clip(RoundedCornerShape(10.dp))
+            )
+            Spacer(Modifier.width(12.dp))
+            Column(Modifier.weight(1f)) {
+                Text(title, style = MaterialTheme.typography.titleMedium)
+                Text(artist, style = MaterialTheme.typography.bodySmall, color = Color.Black.copy(alpha = 0.7f))
+            }
+            Icon(
+                imageVector = Icons.Default.MoreVert,
+                contentDescription = "More",
+                tint = Color.Black.copy(alpha = 0.5f)
+            )
+        }
+    }
+}
+
+
+@Composable
+private fun TranslucentCircleIcon(
+    onClick: () -> Unit,
+    icon: @Composable () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .size(40.dp)
+            .clip(CircleShape)
+            .background(Color.Black.copy(alpha = 0.35f))
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center
+    ) {
+        icon()
     }
 }
