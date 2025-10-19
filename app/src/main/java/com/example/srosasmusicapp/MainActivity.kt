@@ -60,6 +60,7 @@ import com.example.srosasmusicapp.api.MusicApi
 import com.example.srosasmusicapp.components.MiniPlayer
 import com.example.srosasmusicapp.models.Album
 import com.example.srosasmusicapp.models.AlbumId
+import com.example.srosasmusicapp.screens.DetailScreen
 import com.example.srosasmusicapp.screens.HomeScreen
 import com.example.srosasmusicapp.ui.theme.PurpleGradA
 import com.example.srosasmusicapp.ui.theme.PurpleGradB
@@ -105,6 +106,19 @@ class   MainActivity : ComponentActivity() {
                                             ?.putSerializable("albumId", AlbumId(albumId))
                                         nav.navigate("detail")
                                     },
+                                    onPlay = { album -> nowPlaying = album }
+                                )
+                            }
+
+                            composable("detail") {
+                                // Recuperar el Serializable desde el back stack
+                                val arg = nav.previousBackStackEntry
+                                    ?.arguments
+                                    ?.getSerializable("albumId") as? AlbumId
+
+                                DetailScreen(
+                                    albumId = arg?.id ?: "",
+                                    onBack = { nav.popBackStack() },
                                     onPlay = { album -> nowPlaying = album }
                                 )
                             }
